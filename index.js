@@ -1,44 +1,81 @@
 import express from "express";
-import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
+import { authRouter } from "./routes/auth.js";
+import { ChangeStream, MongoClient } from "mongodb";
 import cors from "cors";
-import bcrypt from "bcrypt";
-import {productRouter} from "./routes/products.js";
-import {adminRouter} from "./routes/admin.js";
-import {userRouter} from "./routes/user.js"
-dotenv.config();
+import { productrouter } from "./routes/productRoutes.js";
+import { orderrouter } from "./routes/orderRoutes.js";
+import { paymentrouter } from "./routes/paymentRoutes.js";
+import { Server } from "socket.io";
+import http from "http";
 
+const corsOptions = {
+  origin: "*",
+  optionsSuccessStatus: 200,
+};
 const app = express();
-const PORT = process.env.PORT || 4000;
-app.use(express.json());
-app.use(cors());
-
+dotenv.config();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
 const MONGO_URL = process.env.MONGO_URL;
+export const activeUsers = new Set();
+
+app.use(cors(corsOptions));
+app.use(express.json());
+
+export const io = new Server(server, {
+  cors: {
+    origin: `${process.env.CLIENT_URL}`,
+    methods: ["GET", "POST"],
+  },
+});
+
 async function createConnection() {
-  const client = new MongoClient(MONGO_URL);
-  await client.connect();
-  console.log("Mongo is connected ");
-  return client;
+  try {
+    const client = new MongoClient(MONGO_URL);
+    await client.connect();
+    console.log("connected to database");
+    return client;
+  } catch (error) {
+    console.log("error while connecting to database", error);
+  }
 }
+
+io.on("connection", function (socket) {
+  console.log("Made socket connection");
+
+  socket.on("new user", function (username) {
+    console.log(username);
+    console.log(activeUsers);
+
+    if (!activeUsers.has((user) => user.username === username)) {
+      activeUsers.add({ username: username, socketId: socket.id });
+      console.log("New User Connected", activeUsers);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+    activeUsers.forEach((user) => {
+      if (user.socketId == socket.id) {
+        activeUsers.delete(user);
+      }
+    });
+    console.log("User Disconnected", activeUsers);
+  });
+});
+
+server.listen(PORT, () => {
+  console.log("listening to PORT :", PORT);
+});
+
+app.get("/", (req, res) => {
+  //   console.log("default request");
+  res.send("Welcome to the Application");
+});
 
 export const client = await createConnection();
-
-app.listen(PORT, () => console.log("Server started in port number:", PORT));
-
-export async function generateHashedPassword(password) {
-  const NO_OF_ROUNDS = 10; //Number of rounds of salting
-  const salt = await bcrypt.genSalt(NO_OF_ROUNDS);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
-}
-// express.json() is a inbuilt middleware to convert data inside body to json format.
-
-
-app.use("/product",productRouter);
-app.use("/admin",adminRouter);
-app.use("/user",userRouter);
-
-
-app.get("/", function (req, res) {
-  res.send("Hello, Welcome to the APP");
-});
+app.use("/auth", authRouter);
+app.use("/product", productrouter);
+app.use("/order", orderrouter);
+app.use("/payment", paymentrouter);
