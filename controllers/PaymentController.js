@@ -12,6 +12,7 @@ export const createPaymnetOrder = async (req, res) => {
   });
 
   var options = {
+    // amount: amount * 1, // amount in the smallest currency unit
     amount: amount * 100, // amount in the smallest currency unit
     currency: "INR",
     receipt: "order_rcptid_11",
