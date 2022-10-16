@@ -9,9 +9,10 @@ import { ObjectId } from "mongodb";
 
 export const addProduct = async (req, res) => {
   console.log("Inside addProduct");
-  const { title, description, price } = req.body;
+  const { title,image, description, price } = req.body;
   const added = await addProductToDB({
     title: title,
+    image:image,
     description: description,
     price: price,
   });
@@ -31,11 +32,11 @@ export const addProduct = async (req, res) => {
 
 export const editProduct = async (req, res) => {
   console.log("Inside editProduct");
-  const { _id, title, description, price } = req.body;
-  console.log(_id, title, description, price);
+  const { _id, title,image, description, price } = req.body;
+  console.log(_id, title,image, description, price);
   console.log(`-${_id}-`);
   console.log(String(_id));
-  const updated = await editProductFromDB(_id, title, description, price);
+  const updated = await editProductFromDB(_id, title,image, description, price);
   console.log(updated);
   if (!updated) {
     res.send({

@@ -5,13 +5,13 @@ export function addProductToDB(data) {
   return client.db("foodzone").collection("products").insertOne(data);
 }
 
-export function editProductFromDB(_id, title, description, price) {
+export function editProductFromDB(_id, title,image, description, price) {
   return client
     .db("foodzone")
     .collection("products")
     .updateOne(
       { _id: ObjectId(_id) },
-      { $set: { title: title, description: description, price: price } }
+      { $set: { title: title, image:image,description: description, price: price } }
     );
 }
 
