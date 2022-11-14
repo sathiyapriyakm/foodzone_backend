@@ -71,7 +71,7 @@ server.listen(PORT, () => {
 
 app.get("/", (req, res) => {
   //   console.log("default request");
-  res.send("Welcome to the Application");
+  res.send("Welcome to the  Food ordering Application");
 });
 
 export const client = await createConnection();
