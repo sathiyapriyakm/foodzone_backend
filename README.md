@@ -1,4 +1,4 @@
-# [foodzone](https://courageous-vacherin-7d1d78.netlify.app) - Website
+# [Foodzone](https://courageous-vacherin-7d1d78.netlify.app) - Website
 
   [Front End](https://github.com/sathiyapriyakm/foodzone_frontend)
   [Back End](https://github.com/sathiyapriyakm/foodzone_backend)
